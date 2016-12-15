@@ -334,7 +334,11 @@ prependToAll sep (x:xs) = sep <> x : prependToAll sep xs
 decodeWithP :: AL.Parser a -> L.ByteString -> Either String a
 decodeWithP p s =
     case AL.parse p s of
-      AL.Done _ v     -> Right v
+      AL.Done "" v     -> Right v
+      AL.Done s _      -> Left errRemainder
+        where errRemainder = "parse sucessful, but the following input was left:\n"
+                               ++ BL8.unpack s
+
       AL.Fail left []      msg -> Left $ errFail left msg
       AL.Fail left context msg -> Left $ errFail left msg ++ errCtxt
         where errCtxt = concatMap (++ "\n") $ "the parsing context was:" : context
